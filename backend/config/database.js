@@ -1,8 +1,9 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect('mongodb+srv://5amiegg2o_db_user:u1GSfeJ4V9vbH5Lq@parallelme.qhpqmhk.mongodb.net/?appName=ParallelMe');
+    const conn = await mongoose.connect(process.env.MONGO_URI);
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     
@@ -12,4 +13,4 @@ const connectDB = async () => {
   }
 };
 
-module.exports = connectDB;
+module.exports = connectDB
