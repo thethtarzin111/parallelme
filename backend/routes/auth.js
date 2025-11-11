@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const authMiddleware = require('../middleware/auth');
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
@@ -119,6 +120,30 @@ router.post('/login', async (req, res) => {
     } catch (e) {
         console.error('Login error:', e);
         res.status(500).json({ message: 'Server error during login. Please try again later.' });
+    }
+});
+
+// GET /api/auth/me - Protected route to get current user info
+router.get('/me', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.userId).select('-password');
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+
+        }
+
+        res.status(200).json({
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                createdAt: user.createdAt
+            }
+        });
+    } catch (e) {
+        console.error('Get user error:', e);
+        res.status(500).json({ message: 'Server error while fetching user data. Please try again later.' });
     }
 });
 
