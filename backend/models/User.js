@@ -43,7 +43,7 @@ userSchema.pre('save',async function (next) {
 
     try {
         // Generate a salt which is adding random data to password before hashing
-        const salt = await bcrypt.genSalt(10);
+        const salt = await bcrypt.genSalt(8);
         // Hash the password using the salt
         this.password = await bcrypt.hash(this.password, salt);
         next();
