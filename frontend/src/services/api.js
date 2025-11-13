@@ -15,10 +15,10 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    console.log('Token from localStorage:', token); // ← ADD THIS
+    console.log('Token from localStorage:', token);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('Authorization header:', config.headers.Authorization); // ← ADD THIS
+      console.log('Authorization header:', config.headers.Authorization);
     }
     return config;
   },
@@ -43,6 +43,30 @@ export const authAPI = {
         const response = await api.get('/auth/me');
         return response.data;
     },
+};
+
+// Add Persona API calls
+export const personaAPI = {
+  create: async (personaData) => {
+    const response = await api.post('/personas', personaData);
+    return response.data;
+  },
+
+  getMyPersona: async () => {
+    const response = await api.get('/personas/me');
+    return response.data;
+  },
+
+  delete: async () => {
+    const response = await api.delete('personas/me');
+    return response.data;
+  },
+  
+  update: async (personaData) => {
+    const response = await api.put('/personas/me', personaData);
+    return response.data;
+  }
+
 };
 
 export default api;

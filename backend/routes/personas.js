@@ -120,4 +120,62 @@ router.put('/me', authMiddleware, async (req, res) => {
     }
 });
 
+// DELETE /api/personas/me (DELETE current user's persona)
+router.delete('/me', authMiddleware, async (req, res) => {
+    try {
+        const persona = await Persona.findOneAndDelete({ userId: req.userId });
+
+        if (!persona) {
+            return res.status(404).json({message: 'Persona not found'});
+        }
+
+        res.status(200).json({ message: 'Persona deleted successfully!'});
+    } catch (e) {
+        console.error('Error deleting persona:', e);
+        res.status(500).json({ message: 'Server error while deleting persona'});
+    }
+});
+
+// PUT /api/personas/me (UPDATE current user's persona)
+router.put('/me', authMiddleware, async (req, res) => {
+    try {
+        const { traits, fears, inspirations, regenerateAI } = req.body;
+
+        const persona = await Persona.findOne({ userId: req.userId });
+
+        if (!persona) {
+            return res.status(404).json({ message: 'Persona not found' });
+        }
+
+        if (traits) persona.traits = traits;
+        if (fears) persona.fears = fears;
+        if (inspirations) persona.inspirations = inspirations;
+
+        if (regenerateAI === true) {
+            console.log('🤖 Regenerating AI description...');
+            try {
+                const newDescription = await generatePersona(
+                    persona.traits, 
+                    persona.fears, 
+                    persona.inspirations
+                );
+                persona.aiGeneratedDescription = newDescription;
+                console.log('✅ AI regeneration successful!');
+            } catch (aiError) {
+                console.error('❌ AI regeneration failed:', aiError.message);
+            }
+        }
+
+        const updatedPersona = await persona.save();
+
+        res.status(200).json({
+            message: 'Persona updated successfully',
+            persona: updatedPersona
+        });
+    } catch (error) {
+        console.error('Error updating persona:', error);
+        return res.status(500).json({ message: 'Server error while updating persona' });
+    }
+});
+
 module.exports = router;
