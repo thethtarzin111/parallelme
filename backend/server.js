@@ -12,9 +12,11 @@ app.use(cors());
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const personaRoutes = require('./routes/personas');
 
 // Use routes
 app.use('/api/auth', authRoutes);
+app.use('/api/personas', personaRoutes);
 
 mongoose.connect(dotenv.parsed.MONGO_URI)
     .then(() => console.log('Connected to MongoDB'))
