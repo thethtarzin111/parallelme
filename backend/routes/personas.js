@@ -2,16 +2,22 @@ const express = require('express');
 const router = express.Router();
 const Persona = require('../models/Persona');
 const authMiddleware = require('../middleware/auth');
+const { generatePersona } = require('../services/aiServices');
 
 // POST /api/personas (CREATE a new persona)
 router.post('/', authMiddleware, async (req, res) => {
     try {
         //Extract data from request body
-        const { traits, fears, inspirations, aiGeneratedDescription} = req.body;
+        const { traits, fears, inspirations} = req.body;
         
         // Validate required fields
         if (!traits || !fears || !inspirations) {
             return res.status(400).json({ message: 'Please provide traits, fears, and inspirations' });
+        }
+
+        // Validate arrays are not empty
+        if (traits.length === 0 || fears.length === 0 || inspirations.length === 0) {
+            return res.status(400).json({ message: 'Traits, fears, and inspirations cannot be empty' });
         }
 
         // Check if user already has a persona
@@ -20,6 +26,21 @@ router.post('/', authMiddleware, async (req, res) => {
             return res.status(400).json({ message: 'Persona already exists for this user' });
         }
 
+        // Generate AI description
+        console.log('Calling AI service to generate persona description...');
+        let aiGeneratedDescription;
+
+        try {
+            aiGeneratedDescription = await generatePersona(traits, fears, inspirations);
+            console.log('AI-generated description received.');
+        } catch (e) {
+            console.error('AI service error:', e.message);
+
+            return res.status(500).json({ message: 'Error generating persona description via AI service',
+            error: e.message
+        });
+    }
+        
         // Create new persona
         const newPersona = new Persona({
             userId: req.userId,

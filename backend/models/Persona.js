@@ -39,7 +39,8 @@ const personaSchema = new mongoose.Schema({
     },
     aiGeneratedDescription: {
         type: String,
-        required: [true, 'AI generated description is required'],
+        default: '',
+        //required: [true, 'AI generated description is required'],
         minlength: [50, 'Description must be at least 50 characters long'],
         maxlength: [2000, 'Description cannot exceed 2000 characters']
     },

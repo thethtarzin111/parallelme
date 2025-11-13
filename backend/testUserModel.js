@@ -1,5 +1,4 @@
 // Test script for User model
-
 const connectDB = require('./config/database.js');
 const User = require('./models/User.js');
 
