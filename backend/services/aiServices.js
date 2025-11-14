@@ -67,17 +67,17 @@ const generatePersona = async (traits, fears, inspirations) => {
         //console.log('Generated Persona Description:', generatedDescription);
 
         return generatedDescription;
-    } catch (error) {
+    } catch (e) {
         console.error('Error generating persona description:', error);
 
         // Handle specific API errors
-        if (error.status === 429) {
+        if (e.status === 429) {
             throw new Error('API rate limit exceeded. Please try again later.');
         }
-        if (error.status >= 401) {
+        if (e.status >= 401) {
             throw new Error('Authentication error with the AI service. Please check your API key.');
         }
-        if (error.status >= 500) {
+        if (e.status >= 500) {
             throw new Error('AI service is currently unavailable. Please try again later.');
         }
 
@@ -86,4 +86,135 @@ const generatePersona = async (traits, fears, inspirations) => {
 
 };
 
-module.exports = { generatePersona };
+const generatePersonalizedQuests = async (persona, batchNumber) => {
+    const Quest = require('../models/Quests');
+    const QUEST_CONFIG = require('../utils/questProgression');
+
+    // Get difficulty range for this batch
+    const difficultyRange = QUEST_CONFIG.DIFFICULTY_RANGES.find(
+        d => d.batch === batchNumber
+    );
+
+    const prompt = `You are a supportive personal growth coach helping someone become their best self.
+    
+    PERSONA DESCRIPTION:
+    ${persona.aiGeneratedDescription}
+    
+    THEIR FEARS:
+    ${persona.fears.join(', ')}
+    
+    TRAITS THEY WANT TO DEVELOP:
+    ${persona.traits.join(', ')}
+    
+    WHO INSPIRES THEM:
+    ${persona.inspirations.join(', ')}
+    
+    TASK: Generate 3 personalized confidence-building, self-esteem increasing quests for Batch ${batchNumber} (out of 10 total batches).
+    
+    DIFFICULTY LEVEL: ${difficultyRange.min} to ${difficultyRange.max} out of 10
+    ${batchNumber === 1 ? 'These are their FIRST quests - make them achievable and encouraging!' : ''}
+    ${batchNumber === 10 ? 'These are their FINAL quests - make them transformative and challenging!' : ''}
+    
+    IMPORTANT GUIDELINES:
+    - Quests should directly help them overcome their fears or develop their desired traits
+    - Each quest should be ONE specific, actionable task they can complete in 1-7 days
+    - Graudally increase difficulty: Quest 1 (${difficultyRange.min}), Quest 2 (${(difficultyRange.min + difficultyRange.max)/2}), Quest 3 (${difficultyRange.max})
+    - Make quests SPECIFIC to their persona, not generic advice
+    - Focus on small, concrete actions that build confidence through doing
+    - Categories: Social, Academic, Personal, Creative, Career, or Health
+    
+    Return ONLY valid JSON (no markdown, no code blocks):
+    [
+        {
+            "title": "Short, inspiring title (max 8 words)",
+            "description": "Clear description of what to do and why it matters for them (2-3 sentences)",
+            "category": "Social|Academic|Personal|Creative|Career|Health",
+            "difficultyLevel": 1.0
+        },
+        {
+            "title": "...",
+            "description":"...",
+            "category":"...",
+            "difficultyLevel": 2.5
+        },
+        {
+            "title": "...",
+            "description": "...",
+            "category": "...",
+            "difficultyLevel": 3.0
+        }
+    ]`;
+
+    try {
+        const response = await anthropic.messages.create({
+            model: 'claude-sonnet-4-5',
+            max_tokens: 1000,
+            messages: [{ role: 'user', content: prompt}]
+        });
+
+        let questsData = response.content[0].text;
+
+        // Clean up response (remove markdown if present)
+        questsData = questsData.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+        // Parse the JSON string into an array
+        const parsedQuests = JSON.parse(questsData);
+
+        // Validate that we got an array of 3 quests
+        if (!Array.isArray(parsedQuests) || parsedQuests.length !== 3) {
+            throw new Error('AI did not return exactly 3 quests');
+        }
+
+        // Validate and create quest documents with defaults
+        const quests = parsedQuests.map((q, index) => {
+            // Validate required fields
+            if (!q.title || !q.description || !q.difficultyLevel) {
+                throw new Error(`Quest ${index + 1} is missing required fields`);
+            }
+
+            // Ensure category is valid (provide default if missing/invalid)
+            const validCategories = ['Social', 'Academic', 'Personal', 'Creative', 'Career', 'Health'];
+            let category = q.category;
+            
+            if (!category || !validCategories.includes(category)) {
+                console.warn(`Quest "${q.title}" has invalid/missing category. Defaulting to "Personal"`);
+                category = 'Personal'; // Default fallback
+            }
+
+            return {
+                userId: persona.userId,
+                personaId: persona._id,
+                title: q.title.trim(),
+                description: q.description.trim(),
+                category: category,
+                difficultyLevel: parseFloat(q.difficultyLevel), // Ensure it's a number
+                batchNumber: batchNumber,
+                status: batchNumber === 1 ? 'available' : 'locked',
+                points: QUEST_CONFIG.calculatePoints(q.difficultyLevel),
+                unlockedAt: batchNumber === 1 ? new Date() : null
+            };
+        });
+
+        console.log('Generated quests:', JSON.stringify(quests, null, 2)); // For debugging  
+
+        return quests;
+        
+    } catch (e) {
+        console.error('Quest generation error:', e)
+
+        // Handle specific API errors
+        if (e.status === 429) {
+            throw new Error('API rate limit exceeded. Please try again later.');
+        }
+        if (e.status >= 401) {
+            throw new Error('Authentication error with the AI service. Please check your API key.');
+        }
+        if (e.status >= 500) {
+            throw new Error('AI service is currently unavailable. Please try again later.');
+        }
+
+        throw new Error('Failed to generated personalized quetss')
+    }
+}
+
+module.exports = { generatePersona, generatePersonalizedQuests };

@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Persona = require('../models/Persona');
+const Quest = require('../models/Quests')
 const authMiddleware = require('../middleware/auth');
-const { generatePersona } = require('../services/aiServices');
+const { generatePersona, generatePersonalizedQuests } = require('../services/aiServices');
 
 // POST /api/personas (CREATE a new persona)
 router.post('/', authMiddleware, async (req, res) => {
@@ -53,9 +54,22 @@ router.post('/', authMiddleware, async (req, res) => {
         // Save to database
         const savedPersona = await newPersona.save();
 
+        // Generate first batch of quests immediately!
+        console.log('Generating initial batch of quests...');
+        let initialQuests = [];
+        try {
+            initialQuests = await generatePersonalizedQuests(savedPersona, 1);
+            await Quest.insertMany(initialQuests);
+            console.log(`Generated ${initialQuests.length} quests for Batch 1`);
+        } catch (questError) {
+            console.error('Quest generation failed:', questError.message);
+            // User can still use the app, just won't have quests yet
+        }
+
         res.status(201).json({
-            message: 'Persona created successfully',
-            persona: savedPersona
+            message: 'Persona created successfully! Your first 3 quests are ready.',
+            persona: savedPersona,
+            questsGenerated: initialQuests.length
         });
     } catch (error) {
         console.error('Error creating persona:', error);
@@ -152,7 +166,7 @@ router.put('/me', authMiddleware, async (req, res) => {
         if (inspirations) persona.inspirations = inspirations;
 
         if (regenerateAI === true) {
-            console.log('🤖 Regenerating AI description...');
+            console.log('Regenerating AI description...');
             try {
                 const newDescription = await generatePersona(
                     persona.traits, 
@@ -160,9 +174,9 @@ router.put('/me', authMiddleware, async (req, res) => {
                     persona.inspirations
                 );
                 persona.aiGeneratedDescription = newDescription;
-                console.log('✅ AI regeneration successful!');
+                console.log('AI regeneration successful!');
             } catch (aiError) {
-                console.error('❌ AI regeneration failed:', aiError.message);
+                console.error('AI regeneration failed:', aiError.message);
             }
         }
 
