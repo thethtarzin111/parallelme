@@ -7,6 +7,7 @@ import Register from './pages/Register';
 import PersonaCreation from './pages/PersonaCreation';
 import QuestList from './pages/QuestList';
 import CompletedQuests from './pages/CompletedQuests';
+import Dashboard from './pages/Dashboard';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -14,7 +15,7 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-purple-50 to-blue-50">
+      <div className="w-screen h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
           <p className="text-gray-600 text-lg">Loading...</p>
@@ -118,7 +119,6 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/quests" element={<QuestList />} />
           
           <Route
             path="/"
@@ -139,10 +139,28 @@ function App() {
           />
 
           <Route
+            path="/quests"
+            element={
+              <ProtectedRoute>
+                <QuestList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
             path="/quests/completed"
             element={
               <ProtectedRoute>
                 <CompletedQuests />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
               </ProtectedRoute>
             }
           />
