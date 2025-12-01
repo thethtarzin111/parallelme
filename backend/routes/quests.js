@@ -210,28 +210,147 @@ router.get('/completed', authMiddleware, async (req, res) => {
 });
 
 // GET /api/quests/stats - Get quest statistics for the user
+// GET /api/quests/stats - Get comprehensive quest statistics
 router.get('/stats', authMiddleware, async (req, res) => {
     try {
         const allQuests = await Quest.find({ userId: req.userId });
+        const completedQuests = allQuests.filter(q => q.status === 'completed');
+
+        // Calculate total points
+        const totalPoints = completedQuests.reduce((sum, q) => sum + q.points, 0);
+
+        // Calculate streak (consecutive days with completions)
+        const streak = calculateStreak(completedQuests);
+
+        // Calculate confidence score (based on quests completed and difficulty)
+        const confidenceScore = calculateConfidenceScore(completedQuests);
+
+        // Get quests by category breakdown
+        const categoryBreakdown = {};
+        ['Social', 'Academic', 'Personal', 'Creative', 'Career', 'Health'].forEach(cat => {
+            categoryBreakdown[cat] = {
+                total: allQuests.filter(q => q.category === cat).length,
+                completed: completedQuests.filter(q => q.category === cat).length
+            };
+        });
+
+        // Get weekly progress (last 7 days)
+        const weeklyProgress = calculateWeeklyProgress(completedQuests);
+
+        // Get recent activity (last 5 completions)
+        const recentActivity = completedQuests
+            .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt))
+            .slice(0, 5)
+            .map(q => ({
+                title: q.title,
+                category: q.category,
+                points: q.points,
+                completedAt: q.completedAt
+            }));
+
+        // Calculate batch progress
+        const currentBatch = Math.max(...allQuests.map(q => q.batchNumber), 0);
+        const batchProgress = {
+            currentBatch,
+            totalBatches: 10,
+            percentage: Math.round((currentBatch / 10) * 100)
+        };
 
         const stats = {
             totalQuests: allQuests.length,
-            completed: allQuests.filter(q => q.status === 'completed').length,
+            completed: completedQuests.length,
             active: allQuests.filter(q => q.status === 'active').length,
             available: allQuests.filter(q => q.status === 'available').length,
             locked: allQuests.filter(q => q.status === 'locked').length,
-            currentBatch: Math.max(...allQuests.map(q => q.batchNumber), 0),
-            totalPoints: allQuests.filter(q=> q.status === 'completed').reduce((sum , q) => sum + q.points, 0),
-            completionRate: allQuests.length > 0
-                ? Math.round((allQuests.filter(q => q.status === 'completed').length / allQuests.length) * 100)
-                : 0
+            currentBatch,
+            totalPoints,
+            completionRate: allQuests.length > 0 
+                ? Math.round((completedQuests.length / allQuests.length) * 100)
+                : 0,
+            streak,
+            confidenceScore,
+            categoryBreakdown,
+            weeklyProgress,
+            recentActivity,
+            batchProgress
         };
 
-        res.status(200).json({ message: 'Quest statistics retrieved successfully', stats});
-    } catch (e) {
-         console.error('Error fetching quest stats:', e);
-         res.status(500).json({ message: 'Server error while fetching quest stats' });
+        res.status(200).json({
+            message: 'Quest statistics retrieved successfully',
+            stats
+        });
+    } catch (error) {
+        console.error('Error fetching quest stats:', error);
+        res.status(500).json({ message: 'Server error while fetching quest stats' });
     }
 });
+
+// Helper function: Calculate streak
+function calculateStreak(completedQuests) {
+    if (completedQuests.length === 0) return 0;
+
+    // Sort by completion date (newest first)
+    const sorted = completedQuests
+        .map(q => new Date(q.completedAt))
+        .sort((a, b) => b - a);
+
+    let streak = 0;
+    let currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < sorted.length; i++) {
+        const questDate = new Date(sorted[i]);
+        questDate.setHours(0, 0, 0, 0);
+
+        const diffDays = Math.floor((currentDate - questDate) / (1000 * 60 * 60 * 24));
+
+        if (diffDays === streak) {
+            streak++;
+        } else if (diffDays > streak) {
+            break;
+        }
+    }
+
+    return streak;
+}
+
+// Helper function: Calculate confidence score
+function calculateConfidenceScore(completedQuests) {
+    if (completedQuests.length === 0) return 0;
+
+    // Score = (number of quests * 10) + (average difficulty * 5)
+    const avgDifficulty = completedQuests.reduce((sum, q) => sum + q.difficultyLevel, 0) / completedQuests.length;
+    const score = (completedQuests.length * 10) + (avgDifficulty * 5);
+    
+    return Math.round(Math.min(score, 100)); // Cap at 100
+}
+
+// Helper function: Calculate weekly progress
+function calculateWeeklyProgress(completedQuests) {
+    const today = new Date();
+    const weeklyData = [];
+
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        date.setHours(0, 0, 0, 0);
+
+        const nextDate = new Date(date);
+        nextDate.setDate(nextDate.getDate() + 1);
+
+        const count = completedQuests.filter(q => {
+            const completedDate = new Date(q.completedAt);
+            return completedDate >= date && completedDate < nextDate;
+        }).length;
+
+        weeklyData.push({
+            date: date.toISOString().split('T')[0],
+            day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+            count
+        });
+    }
+
+    return weeklyData;
+}
 
 module.exports = router;

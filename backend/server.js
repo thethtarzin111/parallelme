@@ -14,11 +14,13 @@ app.use(cors());
 const authRoutes = require('./routes/auth');
 const personaRoutes = require('./routes/personas');
 const questRoutes = require('./routes/quests');
+const storyRoutes = require('./routes/stories');
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/personas', personaRoutes);
 app.use('/api/quests',questRoutes);
+app.use('/api/stories', storyRoutes);
 
 mongoose.connect(dotenv.parsed.MONGO_URI)
     .then(() => console.log('Connected to MongoDB'))

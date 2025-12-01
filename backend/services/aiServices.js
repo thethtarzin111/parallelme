@@ -217,4 +217,85 @@ const generatePersonalizedQuests = async (persona, batchNumber) => {
     }
 }
 
-module.exports = { generatePersona, generatePersonalizedQuests };
+// Short story snippet after completing a quest
+const generateQuestSnippet = async (persona, questTitle, reflection) => {
+    try {
+        const prompt = `You are a creative writer helping someone visualize their personal growth journey.
+
+        CONTEXT:
+        - This person has an alternate self (their ideal future self): "${persona.aiGeneratedDescription}"
+        - They just completed a confidence-building quest: "${questTitle}"
+        - Their reflection on completing it: "${reflection}"
+
+        TASK:
+        Write a SHORT, inspiring 50-80 word story snippet showing their alternate self taking a small step forward on their journey. Make it feel personal, hopeful, and connected to the quest they just completed.
+
+        Style: Second person ("You"), present tense, vivid imagery
+        Tone: Encouraging, cinematic, empowering
+
+        Do NOT use quotation marks or dialogue. Write it as a mini movie scene.`;
+
+            const response = await anthropic.messages.create({
+            model: 'claude-sonnet-4-5',
+            max_tokens: 200,
+            messages: [{ role: "user", content: prompt }]
+            });
+
+            return response.content[0].text.trim();
+    } catch (error) {
+        console.error('Error generating quest snippet:', error);
+        throw new Error('Failed to generate story snippet');
+    }
+};
+
+// Long story chapter after commpleting a batch
+const generateBatchChapter = async (persona, batchNumber, completedQuests) => {
+    try {
+        // Create a summary of the quests they completed
+        const questsSummary = completedQuests.map(q => `- ${q.questTitle}`).join('\n');
+
+        const prompt = `You are a creative writer helping someone visualize their personal growth journey.
+
+        CONTEXT:
+        - This person has an alternate self (their ideal future self): "${persona.aiGeneratedDescription}"
+        - They just completed Batch ${batchNumber} of their confidence-building journey (out of 10 total batches)
+        - Quests they completed in this batch:
+        ${questsSummary}
+
+        PROGRESS CONTEXT:
+        ${batchNumber === 1 ? '- This is their very first batch! The journey begins.' : ''}
+        ${batchNumber >= 5 ? '- They\'re halfway through their transformation!' : ''}
+        ${batchNumber === 10 ? '- This is their FINAL batch! The journey culminates here.' : ''}
+
+        TASK:
+        Write a 200-250 word story chapter showing their alternate self overcoming a significant challenge or reaching a meaningful milestone. Make it feel like Chapter ${batchNumber} of their hero's journey.
+
+        Style: Second person ("You"), past tense, narrative story format
+        Tone: Inspiring, cinematic, emotionally resonant
+        Structure: Setup → Challenge → Breakthrough
+
+        Include:
+        - A specific scene or moment
+        - An internal struggle or fear faced
+        - A moment of courage or growth
+        - A sense of progression
+
+        Do NOT:
+        - Use quotation marks or dialogue
+        - Make it generic - tie it to their persona and progress
+        - Rush the ending`;
+            
+            const response = await anthropic.messages.create({
+            model: 'claude-sonnet-4-5',
+            max_tokens: 500,
+            messages: [{ role: "user", content: prompt }]
+            });
+
+            return response.content[0].text.trim();
+    } catch (error) {
+        console.error('Error generating batch chapter:', error);
+        throw new Error('Failed to generate story chapter');
+    }
+};
+
+module.exports = { generatePersona, generatePersonalizedQuests, generateQuestSnippet, generateBatchChapter };
