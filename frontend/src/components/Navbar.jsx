@@ -91,34 +91,50 @@ const Navbar = () => {
                     <p className="text-xs text-gray-500">{user?.email}</p>
                   </div>
                   
+                  {/*Edit Persona Button*/}
                   <button
                     onClick={() => {
                       navigate('/persona/create');
                       setShowDropdown(false);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-50 transition"
                   >
                     Edit Persona
                   </button>
                   
+                  {/*Completed Quests Button*/}
                   <button
                     onClick={() => {
                       navigate('/quests/completed');
                       setShowDropdown(false);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-50 transition"
                   >
                     Completed Quests
                   </button>
+                                               
+                  {/*Journey Button*/}
+                  <button
+                    onClick={() => {
+                      navigate('/journey');
+                      setShowDropdown(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-50 transition"
+                  >
+                    My Journey
+                  </button>
                   
                   <hr className="my-2" />
-                  
+
+                  {/*Logout Button*/}
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
                   >
                     Logout
                   </button>
+
+          
                 </div>
               )}
             </div>

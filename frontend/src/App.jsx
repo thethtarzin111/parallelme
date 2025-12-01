@@ -8,6 +8,7 @@ import PersonaCreation from './pages/PersonaCreation';
 import QuestList from './pages/QuestList';
 import CompletedQuests from './pages/CompletedQuests';
 import Dashboard from './pages/Dashboard';
+import Journey from './pages/Journey';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -119,6 +120,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/journey" element={<Journey />} />
           
           <Route
             path="/"

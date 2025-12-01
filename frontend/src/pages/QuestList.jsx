@@ -222,8 +222,8 @@ const QuestList = () => {
                             onClick={() => setSelectedCategory(category)}
                             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                                 selectedCategory === category
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                                    : 'bg-white text-gray-700 hover:bg-gray-200'
                             }`}
                         >
                             {category}
