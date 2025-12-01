@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar';
 import QuestCard from '../components/QuestCard';
 import QuestCompletionModal from '../components/QuestCompletionModal';
 import CelebrationModal from '../components/CelebrationModal';
+import Toast from '../components/Toast';
 
 const QuestList = () => {
     const { user, logout } = useAuth();
@@ -20,6 +21,9 @@ const QuestList = () => {
     // New state for completion modals
     const [completingQuest, setCompletingQuest] = useState(null);
     const [celebrationData, setCelebrationData] = useState(null);
+
+    // Toast state
+    const [toast, setToast] = useState(null);
 
     const categories = ['All', 'Social', 'Academic', 'Personal', 'Creative', 'Career', 'Health'];
 
@@ -52,10 +56,16 @@ const QuestList = () => {
             await fetchQuests();
             
             // Show success message
-            alert('Quest started! You got this! 💪');
+            setToast({ 
+                message: 'Quest started! You got this! 💪', 
+                type: 'success',
+                duration: 5000 });
         } catch (err) {
             console.error('Error starting quest:', err);
-            alert(err.response?.data?.message || 'Failed to start quest');
+            setToast({ 
+                message: err.response?.data?.message || 'Failed to start quest', 
+                type: 'error' 
+            });
         } finally {
             setStartingQuestId(null);
         }
@@ -86,10 +96,10 @@ const QuestList = () => {
         ? quests
         : quests.filter(q => q.category === selectedCategory);
 
-    // ✅ Single loading check
+    // loading check and screen
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="w-screen h-screen flex items-center justify-center bg-white">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
                     <p className="text-gray-600">Loading your quests...</p>
@@ -98,7 +108,7 @@ const QuestList = () => {
         );
     }
 
-    // ✅ Single error check
+    // Error check
     if (error) {
         return (
             <div className="min-h-screen bg-gray-50">
@@ -120,12 +130,12 @@ const QuestList = () => {
         );
     }
 
-    // ✅ Main content
+    // Main content
     return (
         <div className="min-h-screen bg-gray-50">
             <Navbar />
             
-            <div className="max-w-6xl mx-auto p-6">
+            <div className="w-full px-8 py-6">
                 {/* Header */}
                 <div className="mb-8">
                     <h2 className="text-4xl font-bold text-gray-800 mb-2">
@@ -160,7 +170,7 @@ const QuestList = () => {
                     </p>
                 </div>
 
-                {/* Quest Grid */}
+                {/* Quest Grid - Full width with responsive columns */}
                 {filteredQuests.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="text-6xl mb-4">🎯</div>
@@ -175,7 +185,7 @@ const QuestList = () => {
                         </p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                         {filteredQuests.map(quest => (
                             <QuestCard
                                 key={quest._id}
@@ -208,6 +218,15 @@ const QuestList = () => {
                         setCelebrationData(null);
                         fetchQuests(); // Refresh to show new quests if batch unlocked
                     }}
+                />
+            )}
+
+            {/* Toast Notification */}
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
                 />
             )}
         </div>

@@ -88,10 +88,10 @@ const CompletedQuests = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      
-      <div className="max-w-6xl mx-auto p-6">
+    <div className="min-h-screen bg-gray-50" style={{ width: '100vw', overflowX: 'hidden' }}>
+        <Navbar />
+        
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-6" style={{ maxWidth: '100vw' }}>
         {/* Header */}
         <div className="mb-8">
           <button
