@@ -7,6 +7,9 @@ import QuestCard from '../components/QuestCard';
 import QuestCompletionModal from '../components/QuestCompletionModal';
 import CelebrationModal from '../components/CelebrationModal';
 import Toast from '../components/Toast';
+import storyService from '../services/storyService';
+import StoryModal from '../components/StoryModal';
+import BatchChapterModal from '../components/BatchChapterModal';
 
 const QuestList = () => {
     const { user, logout } = useAuth();
@@ -18,7 +21,16 @@ const QuestList = () => {
     const [startingQuestId, setStartingQuestId] = useState(null);
     const [currentBatch, setCurrentBatch] = useState(0);
 
-    // New state for completion modals
+    // States for quest story generation
+    const [storyData, setStoryData] = useState(null);
+    const [generatingStory, setGeneratingStory] = useState(false);
+
+    // States for batch chapter story generation
+    const [batchChapterData, setBatchChapterData] = useState(null);
+    const [pendingBatchChapter, setPendingBatchChapter] = useState(null);
+    const [generatingBatchChapter, setGeneratingBatchChapter] = useState(false);
+
+    // New state for quest completion modals
     const [completingQuest, setCompletingQuest] = useState(null);
     const [celebrationData, setCelebrationData] = useState(null);
 
@@ -76,18 +88,32 @@ const QuestList = () => {
         try {
             const response = await questService.completeQuest(questId, reflection);
             
+            console.log('=== QUEST COMPLETION RESPONSE ===');
+            console.log('batchCompleted:', response.batchCompleted);
+            console.log('batchNumber:', response.quest.batchNumber);
+            
+            // ⭐ Store batch info if this completed a batch
+            if (response.batchCompleted) {
+                setPendingBatchChapter({
+                    batchNumber: response.quest.batchNumber,
+                    questTitle: response.quest.title
+                });
+                console.log('✅ Batch completed! Saved for chapter generation');
+            }
+            
             // Show celebration
             setCelebrationData({
                 quest: response.quest,
                 batchCompleted: response.batchCompleted,
-                newBatchNumber: response.newBatchNumber
+                newBatchNumber: response.newBatchNumber,
+                questId: questId
             });
             
             // Refresh quests
             await fetchQuests();
         } catch (err) {
             console.error('Error completing quest:', err);
-            throw err; // Re-throw to be caught by modal
+            throw err;
         }
     };
 
@@ -95,6 +121,48 @@ const QuestList = () => {
     const filteredQuests = selectedCategory === 'All'
         ? quests
         : quests.filter(q => q.category === selectedCategory);
+        
+    // Function to generate story after celebration
+    const handleGenerateStory = async (questId, questTitle) => {
+        try {
+            setGeneratingStory(true);
+            const story = await storyService.generateQuestSnippet(questId);
+            
+            setStoryData({
+                content: story.content,
+                questTitle: questTitle
+            });
+        } catch (err) {
+            console.error('Error generating story:', err);
+            setToast({
+                message: 'Could not generate story snippet',
+                type: 'error'
+            });
+        } finally {
+            setGeneratingStory(false);
+        }
+    };
+
+    // Function to generate batch chapter after completing all quests in a batch
+    const handleGenerateBatchChapter = async (batchNumber) => {
+        try {
+            setGeneratingBatchChapter(true);
+            const chapter = await storyService.generateBatchChapter(batchNumber);
+            
+            setBatchChapterData({
+                content: chapter.content,
+                batchNumber: batchNumber
+            });
+        } catch (err) {
+            console.error('Error generating batch chapter:', err);
+            setToast({
+                message: 'Could not generate batch chapter',
+                type: 'error'
+            });
+        } finally {
+            setGeneratingBatchChapter(false);
+        }
+    };
 
     // loading check and screen
     if (loading) {
@@ -216,9 +284,80 @@ const QuestList = () => {
                     newBatchNumber={celebrationData.newBatchNumber}
                     onClose={() => {
                         setCelebrationData(null);
+                        // ⭐ Generate story after closing celebration
+                        if (celebrationData.questId && celebrationData.quest) {
+                            handleGenerateStory(celebrationData.questId, celebrationData.quest.title);
+                        }
                         fetchQuests(); // Refresh to show new quests if batch unlocked
                     }}
                 />
+            )}
+
+            {/* Story Modal */}
+            {storyData && (
+                <StoryModal
+                    story={storyData.content}
+                    questTitle={storyData.questTitle}
+                    onClose={() => {
+                        console.log('=== STORY MODAL CLOSING ===');
+                        console.log('pendingBatchChapter:', pendingBatchChapter);
+                        
+                        setStoryData(null);
+                        
+                        // ⭐ Check if we need to generate batch chapter
+                        if (pendingBatchChapter) {
+                            console.log('✅ TRIGGERING BATCH CHAPTER GENERATION');
+                            console.log('Batch number:', pendingBatchChapter.batchNumber);
+                            handleGenerateBatchChapter(pendingBatchChapter.batchNumber);
+                            setPendingBatchChapter(null); // Clear it after triggering
+                        } else {
+                            console.log('❌ No pending batch chapter');
+                        }
+                    }}
+                />
+            )}
+
+            {/* Batch Chapter Modal */}
+            {batchChapterData && (
+                <BatchChapterModal
+                    chapter={batchChapterData.content}
+                    batchNumber={batchChapterData.batchNumber}
+                    onClose={() => setBatchChapterData(null)}
+                />
+            )}
+
+            {/* Loading overlay for batch chapter generation */}
+            {generatingBatchChapter && (
+                <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl p-10 text-center max-w-md">
+                        <div className="text-6xl mb-4 animate-bounce">📖</div>
+                        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
+                        <p className="text-xl font-bold text-gray-800 mb-2">
+                            Writing Your Chapter...
+                        </p>
+                        <p className="text-sm text-gray-600">
+                            ✨ Crafting your transformation story
+                        </p>
+                        <p className="text-xs text-gray-500 mt-2">
+                            This may take a moment...
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* Loading overlay for story generation */}
+            {generatingStory && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl p-8 text-center max-w-md">
+                        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
+                        <p className="text-lg font-semibold text-gray-800 mb-2">
+                            Creating your story...
+                        </p>
+                        <p className="text-sm text-gray-600">
+                            ✨ Imagining your alternate reality
+                        </p>
+                    </div>
+                </div>
             )}
 
             {/* Toast Notification */}
