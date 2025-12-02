@@ -71,7 +71,8 @@ const Register = () => {
         });
 
         if (result.success) {
-            navigate('/');
+            localStorage.removeItem('introSeen'); // Clear intro flag
+            navigate('/intro'); // Go to narrative intro
         } else {
             setApiError(result.error);
         }

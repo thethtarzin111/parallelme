@@ -323,16 +323,16 @@ const PersonaCreation = () => {
   };
 
   return (
-    <div className="w-screen h-screen flex items-center justify-center bg-white">
+    <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-indigo-900 to-black">
       <div className="max-w-2xl mx-auto">
         {/* Progress Bar */}
         {currentStep <= 4 && (
           <div className="mb-8">
             <div className="flex justify-between mb-2">
-              <span className="text-sm font-medium text-gray-600">
+              <span className="text-sm font-medium text-white">
                 Step {currentStep} of {totalSteps}
               </span>
-              <span className="text-sm font-medium text-purple-600">
+              <span className="text-sm font-medium text-white">
                 {Math.round((currentStep / totalSteps) * 100)}%
               </span>
             </div>
