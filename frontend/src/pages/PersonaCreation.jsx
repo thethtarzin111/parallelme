@@ -8,6 +8,7 @@ const PersonaCreation = () => {
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [canGoBack, setCanGoBack] = useState(false);
 
     const [formData, setFormData] = useState({
         fears: '',
@@ -27,10 +28,14 @@ const PersonaCreation = () => {
                 if (existing) {
                     // Persona exists, redirect to quests
                     navigate('/quests');
+                } else {
+                  // New user, check if they can go back
+                  setCanGoBack(window.history.length > 2);
                 }
             } catch (err) {
                 // No persona found, continue with creation
                 console.log('No existing persona, proceeding with creation');
+                setCanGoBack(window.history.length > 2);
             }
         };
         
@@ -67,11 +72,17 @@ const PersonaCreation = () => {
         }
     };
 
-    // Navigate to previous step
+    // Navigate to previous step OR previous page
     const handleBack = () => {
-        setCurrentStep(prev => prev - 1);
-        setError('');
-    }
+        if (currentStep === 1 && canGoBack) {
+            // On first step, go back to previous page
+            navigate(-1);
+        } else if (currentStep > 1) {
+            // On other steps, go back one step
+            setCurrentStep(prev => prev - 1);
+            setError('');
+        }
+    };
 
     // Submit and generate persona
     const handleSubmit = async () => {
@@ -359,7 +370,8 @@ const PersonaCreation = () => {
           {/* Navigation Buttons */}
           {currentStep <= 4 && (
             <div className="flex gap-4 mt-8">
-              {currentStep > 1 && currentStep < 5 && (
+              {/* Back button - show on step 1 if can go back, or on steps 2-4 */}
+              {((currentStep === 1 && canGoBack) || (currentStep > 1 && currentStep < 5)) && (
                 <button
                   onClick={handleBack}
                   disabled={loading}
