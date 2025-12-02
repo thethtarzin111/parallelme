@@ -7,8 +7,10 @@ const cors = require('cors');
 const app = express();
 
 // Middleware
-app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://parallelme.vercel.app'],
+  credentials: true
+}));
 
 // Import routes
 const authRoutes = require('./routes/auth');
