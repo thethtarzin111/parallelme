@@ -23,8 +23,15 @@ app.use('/api/quests',questRoutes);
 app.use('/api/stories', storyRoutes);
 
 mongoose.connect(dotenv.parsed.MONGO_URI)
-    .then(() => console.log('Connected to MongoDB'))
-    .catch(err => console.error('MongoDB connection error:', err));
+    .then(() => {
+        console.log('Connected to MongoDB');
+        console.log('Connection string:', dotenv.parsed.MONGO_URI);
+
+    })
+    .catch(err => {
+        console.error('MongoDB connection error:', err);
+        console.log('Connection string:', dotenv.parsed.MONGO_URI);
+    });
 
 
 // Basic route for testing
