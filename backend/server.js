@@ -33,7 +33,7 @@ app.use('/api/quests',questRoutes);
 app.use('/api/stories', storyRoutes);
 app.use('/api/', limiter);
 
-mongoose.connect(dotenv.parsed.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB connection error:', err));
 
