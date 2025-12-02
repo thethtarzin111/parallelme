@@ -2,6 +2,7 @@ const dotenv = require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 
 
 const app = express();
@@ -11,6 +12,13 @@ app.use(cors({
   origin: ['http://localhost:5173', 'https://parallelme.vercel.app'],
   credentials: true
 }));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: 'Too many requests from this IP, please try again later.'
+});
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -23,6 +31,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/personas', personaRoutes);
 app.use('/api/quests',questRoutes);
 app.use('/api/stories', storyRoutes);
+app.use('/api/', limiter);
 
 mongoose.connect(dotenv.parsed.MONGO_URI)
     .then(() => console.log('Connected to MongoDB'))
