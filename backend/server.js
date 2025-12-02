@@ -1,7 +1,9 @@
-require('dotenv').config();
+const dotenv = require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+
+
 const app = express();
 
 // Middleware
@@ -17,13 +19,13 @@ const storyRoutes = require('./routes/stories');
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/personas', personaRoutes);
-app.use('/api/quests', questRoutes);
+app.use('/api/quests',questRoutes);
 app.use('/api/stories', storyRoutes);
 
-// Fix: Use process.env instead of dotenv.parsed
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(dotenv.parsed.MONGO_URI)
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB connection error:', err));
+
 
 // Basic route for testing
 app.get('/', (req, res) => {
