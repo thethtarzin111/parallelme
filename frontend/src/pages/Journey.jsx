@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import storyService from '../services/storyService';
@@ -6,6 +7,7 @@ import Navbar from '../components/Navbar';
 
 const Journey = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [stories, setStories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('All'); // All, Quest Snippets, Batch Chapters
@@ -59,10 +61,10 @@ const Journey = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50" style={{ width: '100vw', overflowX: 'hidden' }}>
             <Navbar />
             
-            <div className="max-w-5xl mx-auto px-6 py-8">
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-6" style={{ maxWidth: '100vw' }}>
                 {/* Header */}
                 <div className="mb-8">
                     <div className="flex items-center justify-between mb-4">
@@ -117,12 +119,16 @@ const Journey = () => {
                         <p className="text-gray-600 mb-6">
                             Complete quests to unlock chapters of your transformation
                         </p>
-                        <Link 
-                            to="/quests"
-                            className="inline-block px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg transition"
+
+                        <button
+                            onClick={() => {
+                                navigate('/quests');
+                            }}
+                            className="px-6 py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white rounded-lg font-semibold hover:shadow-lg transition"
                         >
                             Start Your First Quest
-                        </Link>
+                        </button>
+
                     </div>
                 ) : (
                     /* Timeline */

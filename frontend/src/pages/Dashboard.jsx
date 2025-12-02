@@ -208,7 +208,7 @@ const Dashboard = () => {
             ) : (
               <div className="flex items-center justify-center h-[250px] text-gray-400">
                 <div className="text-center">
-                  <div className="text-5xl mb-2">📊</div>
+                  <div className="text-5xl mb-2"></div>
                   <p className="text-sm">Complete quests to see breakdown</p>
                 </div>
               </div>
@@ -295,7 +295,6 @@ const Dashboard = () => {
           className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all"
           
         >
-          <span>📖</span>
           <span>Relive Your Journey</span>
           <span>→</span>
         </button>

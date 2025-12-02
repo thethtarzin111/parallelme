@@ -210,7 +210,6 @@ router.get('/completed', authMiddleware, async (req, res) => {
 });
 
 // GET /api/quests/stats - Get quest statistics for the user
-// GET /api/quests/stats - Get comprehensive quest statistics
 router.get('/stats', authMiddleware, async (req, res) => {
     try {
         const allQuests = await Quest.find({ userId: req.userId });
@@ -282,6 +281,15 @@ router.get('/stats', authMiddleware, async (req, res) => {
     } catch (error) {
         console.error('Error fetching quest stats:', error);
         res.status(500).json({ message: 'Server error while fetching quest stats' });
+    }
+});
+
+router.delete('/all', authMiddleware, async (req, res) => {
+    try {
+        await Quest.deleteMany({ userId: req.userId });
+        res.json({ message: 'All quests deleted' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 });
 

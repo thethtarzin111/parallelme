@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { personaAPI } from '../services/api';
+
 
 const PersonaCreation = () => {
     const navigate = useNavigate();
@@ -17,6 +18,24 @@ const PersonaCreation = () => {
     const [generatedPersona, setGeneratedPersona] = useState(null);
 
     const totalSteps = 4;
+
+    // Check if persona already exists on mount
+    useEffect(() => {
+        const checkExistingPersona = async () => {
+            try {
+                const existing = await personaAPI.get();
+                if (existing) {
+                    // Persona exists, redirect to quests
+                    navigate('/quests');
+                }
+            } catch (err) {
+                // No persona found, continue with creation
+                console.log('No existing persona, proceeding with creation');
+            }
+        };
+        
+        checkExistingPersona();
+    }, [navigate]);
 
     // Handle input changes
     const handleChange = (field, value) => {
@@ -182,100 +201,119 @@ const PersonaCreation = () => {
       case 5:
         return (
             <div className="space-y-6">
-            <div className="text-center mb-8">
-                <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-                <span className="text-4xl">✨</span>
+                <div className="text-center mb-8">
+                    <div 
+                        className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 opacity-0 animate-fadeInUp"
+                        style={{ animationDelay: '0s', animationFillMode: 'forwards' }}
+                    >
+                        <span className="text-4xl">✨</span>
+                    </div>
+                    <h2 
+                        className="text-3xl font-bold text-gray-800 mb-2 opacity-0 animate-fadeInUp"
+                        style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}
+                    >
+                        Meet Your Alternate Self
+                    </h2>
+                    <p 
+                        className="text-gray-600 opacity-0 animate-fadeInUp"
+                        style={{ animationDelay: '0.5s', animationFillMode: 'forwards' }}
+                    >
+                        This is who you can become
+                    </p>
                 </div>
-                <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                Meet Your Alternate Self
-                </h2>
-                <p className="text-gray-600">
-                This is who you can become
-                </p>
-            </div>
 
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-200">
-                <div className="prose prose-lg max-w-none text-gray-700 whitespace-pre-wrap">
-                {generatedPersona?.aiGeneratedDescription}
-                </div>
-            </div>
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-200">
+                  {generatedPersona?.aiGeneratedDescription.split('\n\n').map((paragraph, i) => (
+                      <p 
+                          key={i}
+                          className="prose prose-lg text-gray-700 mb-4 last:mb-0 opacity-0 animate-fadeInUp"
+                          style={{ animationDelay: `${2 + (i * 1)}s`, animationFillMode: 'forwards' }}
+                      >
+                          {paragraph}
+                      </p>
+                  ))}
+              </div>
 
-            <div className="space-y-3">
-                <button
-                onClick={() => navigate('/quests')}
-                className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold text-lg hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105"
-                >
-                Continue to Quests →
-                </button>
-                
-                <div className="flex gap-3">
-                {/* Edit Button - Deletes persona and goes back to review */}
-                <button
-                    onClick={async () => {
-                    try {
-                        setLoading(true);
-                        console.log('🗑️ Deleting persona...');
-                        await personaAPI.delete();
-                        console.log('✅ Persona deleted');
-                        
-                        // Reset to review page
-                        setCurrentStep(4);
-                        setGeneratedPersona(null);
-                        setError('');
-                    } catch (e) {
-                        console.error('❌ Error deleting persona:', e);
-                        setError('Failed to delete persona. Please try again.');
-                    } finally {
-                        setLoading(false);
-                    }
-                    }}
-                    disabled={loading}
-                    className="flex-1 py-3 border-2 border-purple-300 text-purple-700 rounded-lg font-semibold hover:bg-purple-50 transition disabled:opacity-50"
-                >
-                    {loading ? '⏳' : '←'} Edit My Answers
-                </button>
-                
-                {/* Start Over Button - Deletes persona and resets everything */}
-                <button
-                    onClick={async () => {
-                    const confirmed = window.confirm(
-                        'Are you sure? This will delete your current persona and start fresh.'
-                    );
+                <div className="space-y-3">
+                    <button
+                        onClick={() => navigate('/quests')}
+                        className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold text-lg hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 opacity-0 animate-fadeInUp"
+                        style={{ animationDelay: '1.2s', animationFillMode: 'forwards' }}
+                    >
+                        Continue to Quests →
+                    </button>
                     
-                    if (confirmed) {
-                        try {
-                        setLoading(true);
-                        console.log('🗑️ Deleting persona...');
-                        await personaAPI.delete();
-                        console.log('✅ Persona deleted');
+                    <div 
+                        className="flex gap-3 opacity-0 animate-fadeInUp"
+                        style={{ animationDelay: '1.5s', animationFillMode: 'forwards' }}
+                    >
+                        {/* Edit Button */}
+                        <button
+                            onClick={async () => {
+                                try {
+                                    setLoading(true);
+                                    console.log('🗑️ Deleting persona...');
+                                    await personaAPI.delete();
+                                    console.log('✅ Persona deleted');
+                                    
+                                    setCurrentStep(4);
+                                    setGeneratedPersona(null);
+                                    setError('');
+                                } catch (e) {
+                                    console.error('❌ Error deleting persona:', e);
+                                    setError('Failed to delete persona. Please try again.');
+                                } finally {
+                                    setLoading(false);
+                                }
+                            }}
+                            disabled={loading}
+                            className="flex-1 py-3 border-2 border-purple-300 text-purple-700 rounded-lg font-semibold hover:bg-purple-50 transition disabled:opacity-50"
+                        >
+                            {loading ? '⏳' : '←'} Edit My Answers
+                        </button>
                         
-                        // Reset everything
-                        setCurrentStep(1);
-                        setFormData({ fears: '', inspirations: '', traits: '' });
-                        setGeneratedPersona(null);
-                        setError('');
-                        } catch (e) {
-                        console.error('❌ Error deleting persona:', e);
-                        setError('Failed to delete persona. Please try again.');
-                        } finally {
-                        setLoading(false);
-                        }
-                    }
-                    }}
-                    disabled={loading}
-                    className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition disabled:opacity-50"
-                >
-                    {loading ? '⏳' : '🔄'} Start Over
-                </button>
+                        {/* Start Over Button */}
+                        <button
+                            onClick={async () => {
+                                const confirmed = window.confirm(
+                                    'Are you sure? This will delete your current persona and start fresh.'
+                                );
+                                
+                                if (confirmed) {
+                                    try {
+                                        setLoading(true);
+                                        console.log('🗑️ Deleting persona...');
+                                        await personaAPI.delete();
+                                        console.log('✅ Persona deleted');
+                                        
+                                        setCurrentStep(1);
+                                        setFormData({ fears: '', inspirations: '', traits: '' });
+                                        setGeneratedPersona(null);
+                                        setError('');
+                                    } catch (e) {
+                                        console.error('❌ Error deleting persona:', e);
+                                        setError('Failed to delete persona. Please try again.');
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }
+                            }}
+                            disabled={loading}
+                            className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition disabled:opacity-50"
+                        >
+                            {loading ? '⏳' : '🔄'} Start Over
+                        </button>
+                    </div>
                 </div>
-            </div>
-            
-            {/* Show error if delete fails */}
-            {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                {error}
-                </div>
-            )}
+                
+                {/* Show error if delete fails */}
+                {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg opacity-0 animate-fadeInUp"
+                        style={{ animationDelay: '1.8s', animationFillMode: 'forwards' }}
+                    >
+                        {error}
+                    </div>
+                )}
             </div>
         );
 
@@ -325,7 +363,7 @@ const PersonaCreation = () => {
                 <button
                   onClick={handleBack}
                   disabled={loading}
-                  className="flex-1 py-3 border-2 border-gray-300 text-white rounded-lg font-semibold hover:bg-gray-50 transition disabled:opacity-50"
+                  className="flex-1 py-3 border-2 bg-purple-100 border-gray-700 text-black rounded-lg font-semibold hover:bg-gray-50 transition disabled:opacity-50"
                 >
                   ← Back
                 </button>

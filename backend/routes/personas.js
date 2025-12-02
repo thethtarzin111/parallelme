@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Persona = require('../models/Persona');
 const Quest = require('../models/Quests')
+const Story = require('../models/Story');
 const authMiddleware = require('../middleware/auth');
 const { generatePersona, generatePersonalizedQuests } = require('../services/aiServices');
 
@@ -21,10 +22,22 @@ router.post('/', authMiddleware, async (req, res) => {
             return res.status(400).json({ message: 'Traits, fears, and inspirations cannot be empty' });
         }
 
-        // Check if user already has a persona
+        // Delete existing persona if any (for starting new journey)
         const existingPersona = await Persona.findOne({ userId: req.userId });
         if (existingPersona) {
-            return res.status(400).json({ message: 'Persona already exists for this user' });
+            console.log('Deleting existing journey data...');
+            
+            // Delete old persona
+            await Persona.deleteOne({ userId: req.userId });
+            
+            // Delete all old quests
+            await Quest.deleteMany({ userId: req.userId });
+            
+            // Delete all old stories
+            const Story = require('../models/Story');
+            await Story.deleteMany({ userId: req.userId });
+            
+            console.log('✅ Old journey deleted, creating fresh start!');
         }
 
         // Generate AI description
@@ -189,6 +202,16 @@ router.put('/me', authMiddleware, async (req, res) => {
     } catch (error) {
         console.error('Error updating persona:', error);
         return res.status(500).json({ message: 'Server error while updating persona' });
+    }
+});
+
+// DELETE /api/personas/me (DELETE current user's persona)
+router.delete('/', authMiddleware, async (req, res) => {
+    try {
+        await Persona.deleteOne({ userId: req.userId });
+        res.json({ message: 'Persona deleted' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 });
 

@@ -124,4 +124,14 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
+// Delete all stories
+router.delete('/all', authMiddleware, async (req, res) => {
+    try {
+        await Story.deleteMany({ userId: req.userId });
+        res.json({ message: 'All stories deleted' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 module.exports = router;
