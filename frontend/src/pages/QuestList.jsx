@@ -10,6 +10,8 @@ import Toast from '../components/Toast';
 import storyService from '../services/storyService';
 import StoryModal from '../components/StoryModal';
 import BatchChapterModal from '../components/BatchChapterModal';
+import GrandFinaleModal from '../components/GrandFinaleModal';
+import personaService from '../services/personaService';
 
 const QuestList = () => {
     const { user, logout } = useAuth();
@@ -33,6 +35,10 @@ const QuestList = () => {
     // New state for quest completion modals
     const [completingQuest, setCompletingQuest] = useState(null);
     const [celebrationData, setCelebrationData] = useState(null);
+
+    // State for grand finale
+    const [showGrandFinale, setShowGrandFinale] = useState(false);
+    const [userPersona, setUserPersona] = useState(null);
 
     // Toast state
     const [toast, setToast] = useState(null);
@@ -92,13 +98,20 @@ const QuestList = () => {
             console.log('batchCompleted:', response.batchCompleted);
             console.log('batchNumber:', response.quest.batchNumber);
             
-            // ⭐ Store batch info if this completed a batch
+            // Check if this is the FINAL quest (Batch 10 complete)
+            if (response.batchCompleted && response.quest.batchNumber === 10) {
+                console.log('🎉 FINAL BATCH COMPLETE! Preparing grand finale...');
+                // Grand finale will be shown AFTER batch chapter
+            }
+            
+            // Store batch info if this completed a batch
             if (response.batchCompleted) {
                 setPendingBatchChapter({
                     batchNumber: response.quest.batchNumber,
-                    questTitle: response.quest.title
+                    questTitle: response.quest.title,
+                    isFinalBatch: response.quest.batchNumber === 10  // Track if it's final batch
                 });
-                console.log('✅ Batch completed! Saved for chapter generation');
+                console.log('Batch completed! Saved for chapter generation');
             }
             
             // Show celebration
@@ -179,7 +192,7 @@ const QuestList = () => {
     // Error check
     if (error) {
         return (
-            <div className="min-h-screen bg-gray-50">
+            <div className="w-screen h-screen flex items-center justify-center bg-white">
                 <Navbar />
                 <div className="max-w-4xl mx-auto p-6 mt-12">
                     <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
@@ -200,7 +213,7 @@ const QuestList = () => {
 
     // Main content
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="w-screen h-screen bg-gray-50">
             <Navbar />
             
             <div className="w-full px-8 py-6">
@@ -214,6 +227,15 @@ const QuestList = () => {
                     </p>
                 </div>
 
+                {/* TESTING BUTTON - REMOVE COMMENT TO TEST
+                <button 
+                    onClick={() => setShowGrandFinale(true)}
+                    className="fixed bottom-4 right-4 px-4 py-2 bg-red-500 text-white rounded-lg z-50"
+                >
+                    Test Finale
+                </button>
+                */}
+
                 {/* Category Filters */}
                 <div className="mb-6 flex gap-2 flex-wrap">
                     {categories.map(category => (
@@ -222,8 +244,8 @@ const QuestList = () => {
                             onClick={() => setSelectedCategory(category)}
                             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                                 selectedCategory === category
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                                    : 'bg-white text-gray-700 hover:bg-gray-200'
                             }`}
                         >
                             {category}
@@ -304,14 +326,18 @@ const QuestList = () => {
                         
                         setStoryData(null);
                         
-                        // ⭐ Check if we need to generate batch chapter
+                        // Check if we need to generate batch chapter
                         if (pendingBatchChapter) {
                             console.log('✅ TRIGGERING BATCH CHAPTER GENERATION');
                             console.log('Batch number:', pendingBatchChapter.batchNumber);
+                            
+                            // Store if it's final BEFORE clearing
+                            const isFinal = pendingBatchChapter.isFinalBatch;
+                            
                             handleGenerateBatchChapter(pendingBatchChapter.batchNumber);
-                            setPendingBatchChapter(null); // Clear it after triggering
+                            setPendingBatchChapter(null);
                         } else {
-                            console.log('❌ No pending batch chapter');
+                            console.log('No pending batch chapter');
                         }
                     }}
                 />
@@ -322,7 +348,32 @@ const QuestList = () => {
                 <BatchChapterModal
                     chapter={batchChapterData.content}
                     batchNumber={batchChapterData.batchNumber}
-                    onClose={() => setBatchChapterData(null)}
+                    onClose={async () => {
+                        const wasFinalBatch = batchChapterData.batchNumber === 10;
+                        setBatchChapterData(null);
+                        
+                        if (wasFinalBatch) {
+                            try {
+                                const personaData = await personaService.getMyPersona();
+                                setUserPersona(personaData);
+                            } catch (err) {
+                                console.error('Error fetching persona:', err);
+                            }
+                            setShowGrandFinale(true);
+                        }
+                    }}
+                />
+            )}
+
+            {/* Grand Finale Modal */}
+            {showGrandFinale && (
+                <GrandFinaleModal
+                    persona={userPersona}
+                    onClose={() => setShowGrandFinale(false)}
+                    onRestartJourney={() => {
+                    setShowGrandFinale(false);
+                    navigate('/persona/create');
+                }}
                 />
             )}
 

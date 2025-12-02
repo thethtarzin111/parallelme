@@ -6,6 +6,7 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const dropdownRef = useRef(null);
 
   const handleLogout = () => {
@@ -91,34 +92,81 @@ const Navbar = () => {
                     <p className="text-xs text-gray-500">{user?.email}</p>
                   </div>
                   
+                  {/*Edit Persona Button*/}
                   <button
                     onClick={() => {
                       navigate('/persona/create');
                       setShowDropdown(false);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-50 transition"
                   >
                     Edit Persona
                   </button>
                   
+                  {/*Completed Quests Button*/}
                   <button
                     onClick={() => {
                       navigate('/quests/completed');
                       setShowDropdown(false);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-50 transition"
                   >
                     Completed Quests
                   </button>
+                                               
+                  {/*Journey Button*/}
+                  <button
+                    onClick={() => {
+                      navigate('/journey');
+                      setShowDropdown(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-50 transition"
+                  >
+                    My Journey
+                  </button>
                   
                   <hr className="my-2" />
-                  
+
+                  {/*Logout Button*/}
                   <button
-                    onClick={handleLogout}
+                    onClick={() => setShowLogoutModal(true)} 
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
                   >
                     Logout
                   </button>
+
+                  {/* Logout Confirmation Modal */}
+                  {showLogoutModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                          <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+                              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                                  Logout Confirmation
+                              </h3>
+                              <p className="text-gray-600 mb-6">
+                                  Are you sure you want to logout?
+                              </p>
+                              <div className="flex gap-3">
+                                  <button
+                                      onClick={() => setShowLogoutModal(false)}
+                                      className="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition"
+                                  >
+                                      Cancel
+                                  </button>
+                                  <button
+                                      onClick={() => {
+                                          setShowLogoutModal(false);
+                                          logout();
+                                      }}
+                                      className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
+                                  >
+                                      Logout
+                                  </button>
+                              </div>
+                          </div>
+                      </div>
+                  )}
+
+          
                 </div>
               )}
             </div>

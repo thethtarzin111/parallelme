@@ -1,4 +1,7 @@
 import api from './api'; // Existing API config with base URL and auth
+import axios from 'axios';
+
+const API_URL = 'http://localhost:5000/api/quests';
 
 const questService = {
     // Get all available and active quests

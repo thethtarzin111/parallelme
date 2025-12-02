@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import questService from '../services/questService';
 import Navbar from '../components/Navbar';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -207,7 +208,7 @@ const Dashboard = () => {
             ) : (
               <div className="flex items-center justify-center h-[250px] text-gray-400">
                 <div className="text-center">
-                  <div className="text-5xl mb-2">📊</div>
+                  <div className="text-5xl mb-2"></div>
                   <p className="text-sm">Complete quests to see breakdown</p>
                 </div>
               </div>
@@ -283,6 +284,30 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Link to Journey */}
+      <div className="mt-8 text-center">
+
+        <button
+          onClick={() => {
+            navigate('/journey');
+          }}
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all"
+          
+        >
+          <span>Relive Your Journey</span>
+          <span>→</span>
+        </button>
+
+        <p className="text-sm text-gray-500 mt-2">
+          Read the story of your transformation
+        </p>
+
+      </div>
+
+      <hr className="my-2" />
+
+    
     </div>
   );
 };

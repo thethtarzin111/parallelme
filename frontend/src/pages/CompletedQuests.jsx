@@ -57,7 +57,7 @@ const CompletedQuests = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="w-screen h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your completed quests...</p>
@@ -65,6 +65,7 @@ const CompletedQuests = () => {
       </div>
     );
   }
+
 
   if (error) {
     return (
@@ -129,8 +130,8 @@ const CompletedQuests = () => {
                 onClick={() => setSelectedCategory(category)}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedCategory === category
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                    : 'bg-white text-purple-800 hover:bg-gray-100 border border-gray-200'
                 }`}
               >
                 {category}
