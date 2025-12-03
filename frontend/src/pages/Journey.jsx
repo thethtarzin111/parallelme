@@ -82,7 +82,7 @@ const Journey = () => {
                             to="/dashboard"
                             className="px-6 py-3 bg-white border-2 border-purple-200 text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition flex items-center gap-2"
                         >
-                            <span>📊</span>
+                         
                             View Stats
                         </Link>
                     </div>
@@ -112,7 +112,7 @@ const Journey = () => {
                 {/* Empty State */}
                 {filteredStories.length === 0 ? (
                     <div className="text-center py-16">
-                        <div className="text-6xl mb-4">📖</div>
+                        <div className="text-6xl mb-4">🌱</div>
                         <h3 className="text-2xl font-semibold text-gray-700 mb-2">
                             Your Story Begins Here
                         </h3>

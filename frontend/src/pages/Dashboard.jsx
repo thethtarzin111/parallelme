@@ -46,17 +46,17 @@ const Dashboard = () => {
     const { completed, confidenceScore } = stats;
     
     if (completed === 0) {
-      return "Ready to start your journey? Take on your first quest! 🚀";
+      return "Ready to start your journey? Take on your first quest!";
     } else if (completed < 5) {
-      return "Great start! Keep building momentum! 💪";
+      return "Great start! Keep building momentum!";
     } else if (completed < 10) {
-      return "You're making real progress! Keep going! 🌟";
+      return "You're making real progress! Keep going!";
     } else if (completed < 20) {
-      return "Incredible growth! You're unstoppable! 🔥";
+      return "Incredible growth! You're unstoppable!";
     } else if (completed >= 30) {
-      return "You completed all 30 quests! You're amazing! 🏆";
+      return "You completed all 30 quests! You're amazing!";
     } else {
-      return "You're doing fantastic! Keep pushing forward! ⭐";
+      return "You're doing fantastic! Keep pushing forward!";
     }
   };
 
