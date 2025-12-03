@@ -25,7 +25,6 @@ app.use('/api/stories', storyRoutes);
 mongoose.connect(dotenv.parsed.MONGO_URI)
     .then(() => {
         console.log('Connected to MongoDB');
-        console.log('Connection string:', dotenv.parsed.MONGO_URI);
 
     })
     .catch(err => {
