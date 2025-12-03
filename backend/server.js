@@ -3,6 +3,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
+console.log('=== DEBUG INFO ===');
+console.log('dotenv.parsed.MONGO_URI:', dotenv.parsed?.MONGO_URI);
+console.log('process.env.MONGO_URI:', process.env.MONGO_URI);
+console.log('Are they the same?', dotenv.parsed?.MONGO_URI === process.env.MONGO_URI);
+console.log('==================');
 
 const app = express();
 
@@ -22,14 +27,13 @@ app.use('/api/personas', personaRoutes);
 app.use('/api/quests',questRoutes);
 app.use('/api/stories', storyRoutes);
 
-mongoose.connect(dotenv.parsed.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI) 
     .then(() => {
         console.log('Connected to MongoDB');
-
     })
     .catch(err => {
         console.error('MongoDB connection error:', err);
-        console.log('Connection string:', dotenv.parsed.MONGO_URI);
+        console.log('Connection string:', process.env.MONGO_URI);
     });
 
 

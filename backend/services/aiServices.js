@@ -1,8 +1,8 @@
 const Anthropic = require('@anthropic-ai/sdk');
-const dotenv = require('dotenv').config();
+require('dotenv').config();
 
 const anthropic = new Anthropic({
-    apiKey: dotenv.parsed.CLAUDE_API_KEY
+    apiKey: process.env.CLAUDE_API_KEY
 });
 
 /** 
