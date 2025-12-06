@@ -20,18 +20,33 @@ console.log('Allowed CORS origins:', allowedOrigins);
 
 // Middleware
 app.use(express.json());
+
+/*
 app.use(cors({
   origin: '*',  // ⚠️ NOT recommended for production, but works for testing
   credentials: true
 }));
-/*
+*/
+
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      // Origin is in whitelist
+      callback(null, true);
+    } else {
+      // Origin not allowed
+      console.log('❌ Blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-*/
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const personaRoutes = require('./routes/personas');
