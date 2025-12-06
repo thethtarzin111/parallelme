@@ -15,6 +15,9 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',') 
   : ['http://localhost:5173'];
 
+//DEBUG: Check allowed origins
+console.log('Allowed CORS origins:', allowedOrigins);
+
 // Middleware
 app.use(express.json());
 app.use(cors({
