@@ -1,22 +1,10 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:5000/api/stories';
-
-// Get auth token from localStorage
-const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-};
+import api from './api';
 
 const storyService = {
     // Generate quest completion snippet
     generateQuestSnippet: async (questId) => {
         try {
-            const response = await axios.post(
-                `${API_URL}/quest-snippet`,
-                { questId },
-                { headers: getAuthHeader() }
-            );
+            const response = await api.post('/stories/quest-snippet', { questId });
             return response.data;
         } catch (error) {
             console.error('Error generating quest snippet:', error);
@@ -27,11 +15,7 @@ const storyService = {
     // Generate batch completion chapter
     generateBatchChapter: async (batchNumber) => {
         try {
-            const response = await axios.post(
-                `${API_URL}/batch-chapter`,
-                { batchNumber },
-                { headers: getAuthHeader() }
-            );
+            const response = await api.post('/stories/batch-chapter', { batchNumber });
             return response.data;
         } catch (error) {
             console.error('Error generating batch chapter:', error);
@@ -42,9 +26,7 @@ const storyService = {
     // Get all user's stories
     getAllStories: async () => {
         try {
-            const response = await axios.get(API_URL, {
-                headers: getAuthHeader()
-            });
+            const response = await api.get('/stories');
             return response.data;
         } catch (error) {
             console.error('Error fetching stories:', error);

@@ -1,17 +1,8 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:5000/api/personas';
-
-const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-};
+import api from './api';
 
 const personaService = {
     getMyPersona: async () => {
-        const response = await axios.get(API_URL, {
-            headers: getAuthHeader()
-        });
+        const response = await api.get('/personas/me');
         return response.data;
     }
 }
