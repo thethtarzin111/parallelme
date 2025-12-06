@@ -21,12 +21,17 @@ console.log('Allowed CORS origins:', allowedOrigins);
 // Middleware
 app.use(express.json());
 app.use(cors({
+  origin: '*',  // ⚠️ NOT recommended for production, but works for testing
+  credentials: true
+}));
+/*
+app.use(cors({
   origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
+*/
 // Import routes
 const authRoutes = require('./routes/auth');
 const personaRoutes = require('./routes/personas');
